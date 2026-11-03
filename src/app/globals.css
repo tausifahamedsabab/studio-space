@@ -171,27 +171,36 @@
 
 .hero-swiper .swiper-button-next,
 .hero-swiper .swiper-button-prev {
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 3.25rem;
+  height: 3.25rem;
   border-radius: 9999px;
-  border: 1px solid rgb(255 255 255 / 22%);
-  background: rgb(10 10 10 / 30%);
+  border: 1px solid rgb(255 255 255 / 18%);
+  background: radial-gradient(circle, rgb(25 22 16 / 65%) 0%, rgb(10 10 10 / 35%) 100%);
   color: white;
-  backdrop-filter: blur(10px);
-  transition: background 180ms ease, border-color 180ms ease;
+  backdrop-filter: blur(16px) saturate(130%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 50px 90px -40px rgba(240, 180, 82, 0.8);
+  transition: all 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0 2.5rem;
 }
 
 .hero-swiper .swiper-button-next:hover,
 .hero-swiper .swiper-button-prev:hover {
-  background: rgb(240 180 82 / 90%);
+  background: linear-gradient(135deg, rgba(240, 180, 82, 0.98) 0%, rgba(251, 191, 36, 0.95) 100%);
   border-color: transparent;
   color: #17120a;
+  box-shadow: 0 0 0 1px rgba(240, 180, 82, 0.5), 0 70px 130px -30px rgba(240, 180, 82, 0.9);
+  transform: scale(1.12);
+}
+
+.hero-swiper .swiper-button-next:active,
+.hero-swiper .swiper-button-prev:active {
+  transform: scale(0.95);
 }
 
 .hero-swiper .swiper-button-next::after,
 .hero-swiper .swiper-button-prev::after {
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
 }
 
 .hero-swiper .swiper-pagination {

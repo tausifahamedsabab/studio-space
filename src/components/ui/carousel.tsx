@@ -176,7 +176,7 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
 function CarouselPrevious({
   className,
   variant = "outline",
-  size = "icon-sm",
+  size = "icon-lg",
   ...props
 }: React.ComponentProps<typeof Button>) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
@@ -187,9 +187,9 @@ function CarouselPrevious({
       variant={variant}
       size={size}
       className={cn(
-        "absolute touch-manipulation rounded-full",
+        "group absolute touch-manipulation rounded-full border border-white/15 bg-black/35 text-white backdrop-blur-xl shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_40px_80px_-40px_rgba(240,180,82,0.7)] transition-all duration-300 hover:scale-110 hover:border-amber-400/60 hover:bg-gradient-to-br hover:from-amber-400/95 hover:to-amber-300/95 hover:text-[#17120a] hover:shadow-[0_0_0_1px_rgba(240,180,82,0.4),0_60px_120px_-30px_rgba(240,180,82,0.85)] active:scale-95 disabled:opacity-30 disabled:hover:scale-100 disabled:hover:border-white/15 disabled:hover:bg-black/35 disabled:hover:text-white disabled:hover:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_40px_80px_-40px_rgba(240,180,82,0.7)]",
         orientation === "horizontal"
-          ? "inset-y-0 -left-12 my-auto"
+          ? "inset-y-0 -left-16 my-auto hidden lg:inline-flex"
           : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
         className
       )}
@@ -197,7 +197,7 @@ function CarouselPrevious({
       onClick={scrollPrev}
       {...props}
     >
-      <ChevronLeftIcon />
+      <ChevronLeftIcon className="size-5 transition-transform duration-300 group-hover:-translate-x-0.5" />
       <span className="sr-only">Previous slide</span>
     </Button>
   )
@@ -206,7 +206,7 @@ function CarouselPrevious({
 function CarouselNext({
   className,
   variant = "outline",
-  size = "icon-sm",
+  size = "icon-lg",
   ...props
 }: React.ComponentProps<typeof Button>) {
   const { orientation, scrollNext, canScrollNext } = useCarousel()
@@ -217,9 +217,9 @@ function CarouselNext({
       variant={variant}
       size={size}
       className={cn(
-        "absolute touch-manipulation rounded-full",
+        "group absolute touch-manipulation rounded-full border border-white/15 bg-black/35 text-white backdrop-blur-xl shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_40px_80px_-40px_rgba(240,180,82,0.7)] transition-all duration-300 hover:scale-110 hover:border-amber-400/60 hover:bg-gradient-to-br hover:from-amber-400/95 hover:to-amber-300/95 hover:text-[#17120a] hover:shadow-[0_0_0_1px_rgba(240,180,82,0.4),0_60px_120px_-30px_rgba(240,180,82,0.85)] active:scale-95 disabled:opacity-30 disabled:hover:scale-100 disabled:hover:border-white/15 disabled:hover:bg-black/35 disabled:hover:text-white disabled:hover:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_40px_80px_-40px_rgba(240,180,82,0.7)]",
         orientation === "horizontal"
-          ? "inset-y-0 -right-12 my-auto"
+          ? "inset-y-0 -right-16 my-auto hidden lg:inline-flex"
           : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
         className
       )}
@@ -227,7 +227,7 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      <ChevronRightIcon />
+      <ChevronRightIcon className="size-5 transition-transform duration-300 group-hover:translate-x-0.5" />
       <span className="sr-only">Next slide</span>
     </Button>
   )

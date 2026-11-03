@@ -523,3 +523,5 @@ function StudioDetailSkeleton() {
     </div>
   )
 }
+
+
