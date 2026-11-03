@@ -19,6 +19,13 @@ export type AuthFormState = {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+function isValidPassword(password: string) {
+  if (password.length < 6) return false
+  const hasUppercase = /[A-Z]/.test(password)
+  const hasLowercase = /[a-z]/.test(password)
+  return hasUppercase && hasLowercase
+}
+
 export async function loginAction(
   _prevState: AuthFormState,
   formData: FormData
@@ -34,16 +41,23 @@ export async function loginAction(
     }
   }
 
+  if (!EMAIL_PATTERN.test(email)) {
+    return {
+      error: "Enter a valid email address.",
+      values: { email },
+    }
+  }
+
   const user = await getUserByEmail(email)
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     return {
-      error: "Email or password is incorrect. Please try again.",
+      error: "Incorrect email or password.",
       values: { email },
     }
   }
 
   await setSessionCookie(user.id)
-  redirect(next)
+  redirect(next || "/")
 }
 
 export async function registerAction(
@@ -52,6 +66,7 @@ export async function registerAction(
 ): Promise<AuthFormState> {
   const name = String(formData.get("name") ?? "").trim()
   const email = String(formData.get("email") ?? "").trim().toLowerCase()
+  const photoUrl = String(formData.get("photoUrl") ?? "").trim()
   const password = String(formData.get("password") ?? "")
   const confirmPassword = String(formData.get("confirmPassword") ?? "")
   const next = safeNextPath(formData.get("next"))
@@ -61,30 +76,30 @@ export async function registerAction(
   if (!EMAIL_PATTERN.test(email)) {
     fieldErrors.email = "Enter a valid email address."
   }
-  if (password.length < 8) {
-    fieldErrors.password = "Use at least 8 characters."
+  if (!isValidPassword(password)) {
+    fieldErrors.password =
+      "Password must be at least 6 characters and include an uppercase and a lowercase letter."
   }
   if (password !== confirmPassword) {
     fieldErrors.confirmPassword = "Passwords do not match."
   }
 
   if (Object.keys(fieldErrors).length > 0) {
-    return { fieldErrors, values: { name, email } }
+    return { fieldErrors, values: { name, email, photoUrl } }
   }
 
   const existing = await getUserByEmail(email)
   if (existing) {
     return {
-      error: "An account with that email already exists. Try logging in.",
+      error: "An account with that email already exists. Please log in.",
       fieldErrors: { email: "This email is already registered." },
-      values: { name, email },
+      values: { name, email, photoUrl },
     }
   }
 
   const passwordHash = await hashPassword(password)
-  const user = await createUser({ name, email, passwordHash })
-  await setSessionCookie(user.id)
-  redirect(next === "/dashboard" ? "/dashboard?welcome=1" : next)
+  await createUser({ name, email, passwordHash, photoUrl: photoUrl || undefined })
+  redirect("/login")
 }
 
 export async function logoutAction() {

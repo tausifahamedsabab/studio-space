@@ -79,6 +79,7 @@ export type User = {
   email: string
   passwordHash: string
   avatar: string
+  photoUrl?: string
   createdAt: string
 }
 

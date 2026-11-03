@@ -43,13 +43,15 @@ export async function createUser(input: {
   name: string
   email: string
   passwordHash: string
+  photoUrl?: string
 }): Promise<PublicUser> {
   const user: User = {
     id: `usr-${randomUUID()}`,
     name: input.name,
     email: input.email.toLowerCase(),
     passwordHash: input.passwordHash,
-    avatar: "",
+    avatar: input.photoUrl ?? "",
+    photoUrl: input.photoUrl ?? "",
     createdAt: new Date().toISOString(),
   }
   await insertOne("users", user)
