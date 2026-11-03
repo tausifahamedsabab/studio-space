@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -46,36 +47,39 @@ export function UserMenu({ user }: { user: PublicUser }) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" sideOffset={8} className="w-64">
-        <DropdownMenuLabel className="px-2 py-2">
-          <span className="block truncate text-sm font-medium text-foreground">
-            {user.name}
-          </span>
-          <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
-            {user.email}
-          </span>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="px-2 py-2">
+            <span className="block truncate text-sm font-medium text-foreground">
+              {user.name}
+            </span>
+            <span className="mt-0.5 block truncate text-xs font-normal text-muted-foreground">
+              {user.email}
+            </span>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href="/dashboard" />}>
+        <DropdownMenuItem render={<Link href="/dashboard" />} nativeButton={false}>
           <LayoutDashboard />
           Dashboard
         </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/dashboard/studios/new" />}>
+        <DropdownMenuItem render={<Link href="/dashboard/studios/new" />} nativeButton={false}>
           <Plus />
           Add New Studio
         </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/dashboard/studios" />}>
+        <DropdownMenuItem render={<Link href="/dashboard/studios" />} nativeButton={false}>
           <Store />
           My Studio Listings
         </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/dashboard/bookings" />}>
+        <DropdownMenuItem render={<Link href="/dashboard/bookings" />} nativeButton={false}>
           <CalendarCheck />
           My Bookings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <form action={logoutAction}>
+        <form action={logoutAction} className="contents">
           <DropdownMenuItem
             variant="destructive"
-            render={<button type="submit" className="w-full" />}
+            nativeButton={true}
+            render={<button type="submit" className="w-full text-left" />}
           >
             <LogOut />
             Log out
