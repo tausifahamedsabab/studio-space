@@ -18,6 +18,7 @@ import {
   Users,
   Zap,
 } from "lucide-react"
+import { connection } from "next/server"
 
 import { Rating } from "@/components/rating"
 import { SectionHeading } from "@/components/section-heading"
@@ -69,6 +70,9 @@ async function StudioDetail({
 }: {
   params: Promise<{ id: string }>
 }) {
+  // Bookings and session are time-dependent under Cache Components.
+  await connection()
+
   const { id } = await params
   const studio = await getStudioById(id)
 
