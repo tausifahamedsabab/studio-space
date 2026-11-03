@@ -5,6 +5,8 @@ import { buttonVariants } from "@/components/ui/button"
 import { getSessionUser } from "@/lib/auth"
 import { UserMenu } from "./user-menu"
 
+export const dynamic = "force-dynamic"
+
 export async function HeaderAuth() {
   const user = await getSessionUser()
 

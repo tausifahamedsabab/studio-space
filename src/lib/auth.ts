@@ -7,6 +7,7 @@ import {
 import { promisify } from "node:util"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { connection } from "next/server"
 
 import { getUserById, toPublicUser } from "./data"
 import type { PublicUser } from "./types"
@@ -91,6 +92,9 @@ export async function clearSessionCookie() {
 }
 
 export async function getSessionUser(): Promise<PublicUser | null> {
+  // Session expiry depends on the current time, so this must run at request
+  // time rather than during prerendering.
+  await connection()
   const token = (await cookies()).get(SESSION_COOKIE)?.value
   if (!token) return null
   const userId = readSessionToken(token)
