@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import { cn } from "cn"
 
+import { BookingToast } from "@/components/dashboard/booking-toast"
 import { CancelBookingButton } from "@/components/dashboard/cancel-booking-button"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
@@ -92,6 +93,9 @@ async function DashboardBookings({
 
   return (
     <div>
+      <Suspense fallback={null}>
+        <BookingToast />
+      </Suspense>
       {booked && (
         <div className="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
           <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-emerald-500/15 text-emerald-700">

@@ -19,6 +19,7 @@ import {
 import { cn } from "cn"
 
 import { DeleteStudioButton } from "@/components/dashboard/delete-studio-button"
+import { StudioToast } from "@/components/dashboard/studio-toast"
 import { Rating } from "@/components/rating"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
@@ -65,6 +66,9 @@ async function DashboardStudios({
 
   return (
     <div>
+      <Suspense fallback={null}>
+        <StudioToast />
+      </Suspense>
       {createdStudio && (
         <Banner
           tone="success"
