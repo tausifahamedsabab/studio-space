@@ -130,6 +130,7 @@ export async function SiteFooter() {
               variant="ghost"
               size="xs"
               className="text-white/35 hover:bg-white/5 hover:text-white"
+              nativeButton={false}
               render={<Link href="/register" />}
             >
               List your space
