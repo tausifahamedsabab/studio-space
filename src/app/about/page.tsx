@@ -99,7 +99,7 @@ export default function AboutPage() {
                   <ArrowRight className="size-4" />
                 </Link>
                 <Link
-                  href="/dashboard/studios/new"
+                  href="/add-studio"
                   className={cn(
                     buttonVariants({ variant: "outline", size: "lg" }),
                     "h-11 gap-2 rounded-xl px-6 text-sm font-semibold"

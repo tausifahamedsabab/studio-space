@@ -178,7 +178,7 @@ export default function HowItWorksPage() {
               <ArrowRight className="size-4" />
             </Link>
             <Link
-              href="/dashboard/studios/new"
+              href="/add-studio"
               className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 text-sm font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/10"
             >
               <Building2 className="size-4" />
@@ -320,7 +320,7 @@ export default function HowItWorksPage() {
               ))}
             </ul>
             <Link
-              href="/dashboard/studios/new"
+              href="/add-studio"
               className={cn(
                 buttonVariants({ variant: "outline", size: "lg" }),
                 "mt-6 h-10 rounded-xl px-5"

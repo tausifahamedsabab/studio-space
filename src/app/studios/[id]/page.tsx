@@ -277,6 +277,22 @@ async function StudioDetail({
                   </dd>
                 </div>
               </dl>
+
+              {studio.securityDeposit ? (
+                <div className="mt-3 flex items-start gap-3 rounded-xl border border-amber-200/70 bg-amber-50/60 p-4">
+                  <ShieldCheck className="mt-0.5 size-4 shrink-0 text-amber-700" />
+                  <div>
+                    <p className="text-sm font-semibold text-amber-950">
+                      Refundable security deposit
+                    </p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-amber-900/75">
+                      A {formatCurrency(studio.securityDeposit)} deposit is held
+                      separately from the hourly total and returned after the
+                      space is inspected.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
             </section>
 
             <Separator className="my-10" />
@@ -356,7 +372,11 @@ async function StudioDetail({
                       {studio.area} creative district
                     </p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      Exact address is shared after your booking is confirmed.
+                      {studio.address ?? `${studio.area}, ${studio.city}`}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Exact access details are shared after your booking is
+                      confirmed.
                     </p>
                   </div>
                 </div>
