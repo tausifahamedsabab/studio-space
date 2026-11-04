@@ -15,6 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { Logo } from "./logo"
 
 const NAV_LINKS = [
@@ -37,6 +38,7 @@ export function HeaderShell({ auth }: { auth: ReactNode }) {
         </Suspense>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle className="hidden sm:inline-flex" />
           <div className="hidden md:block">{auth}</div>
 
           <Sheet open={open} onOpenChange={setOpen}>
@@ -65,7 +67,10 @@ export function HeaderShell({ auth }: { auth: ReactNode }) {
               >
                 <MobileNav onNavigate={() => setOpen(false)} />
               </Suspense>
-              <div className="mt-auto border-t p-4">{auth}</div>
+              <div className="mt-auto flex items-center gap-3 border-t p-4">
+                <ThemeToggle />
+                {auth}
+              </div>
             </SheetContent>
           </Sheet>
         </div>
