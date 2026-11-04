@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Script from "next/script"
 import { Geist, Geist_Mono } from "next/font/google"
 
 import { SiteFooter } from "@/components/layout/site-footer"
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
   },
 }
 
-const themeInitScript = `(function(){try{var k="${'studiospace-theme'}";var s=localStorage.getItem(k);var d=s?s==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;if(d)document.documentElement.classList.add("dark");}catch(e){}})()`
+const themeInitScript = `(function(){try{var s=localStorage.getItem("studiospace-theme");var d=s?s==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;if(d)document.documentElement.classList.add("dark");}catch(e){}})()`
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -50,10 +51,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
       <body className="flex min-h-full flex-col">
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
