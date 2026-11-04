@@ -1,0 +1,7 @@
+HTTP/1.1 307 Temporary Redirect
+location: /login?next=%2Flogin
+Date: Wed, 04 Nov 2026 08:49:21 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
