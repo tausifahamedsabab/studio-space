@@ -2,14 +2,13 @@
 
 import { redirect } from "next/navigation"
 
+import { loginUser, logoutUser, registerUser } from "@/lib/api/auth"
+import { isApiError } from "@/lib/api/errors"
 import {
   clearSessionCookie,
-  hashPassword,
   safeNextPath,
   setSessionCookie,
-  verifyPassword,
 } from "@/lib/auth"
-import { createUser, getUserByEmail } from "@/lib/data"
 
 export type AuthFormState = {
   error?: string
@@ -24,6 +23,20 @@ function isValidPassword(password: string) {
   const hasUppercase = /[A-Z]/.test(password)
   const hasLowercase = /[a-z]/.test(password)
   return hasUppercase && hasLowercase
+}
+
+function authError(error: unknown, values: Record<string, string>): AuthFormState {
+  if (isApiError(error)) {
+    return {
+      error: error.message,
+      fieldErrors: error.fieldErrors,
+      values,
+    }
+  }
+  return {
+    error: "Something went wrong. Please try again.",
+    values,
+  }
 }
 
 export async function loginAction(
@@ -48,15 +61,15 @@ export async function loginAction(
     }
   }
 
-  const user = await getUserByEmail(email)
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
-    return {
-      error: "Incorrect email or password.",
-      values: { email },
-    }
+  let userId: string
+  try {
+    const user = await loginUser({ email, password })
+    userId = user.id
+  } catch (error) {
+    return authError(error, { email })
   }
 
-  await setSessionCookie(user.id)
+  await setSessionCookie(userId)
   redirect(next || "/")
 }
 
@@ -88,21 +101,30 @@ export async function registerAction(
     return { fieldErrors, values: { name, email, photoUrl } }
   }
 
-  const existing = await getUserByEmail(email)
-  if (existing) {
-    return {
-      error: "An account with that email already exists. Please log in.",
-      fieldErrors: { email: "This email is already registered." },
-      values: { name, email, photoUrl },
-    }
+  try {
+    await registerUser({ name, email, password, photoUrl: photoUrl || undefined })
+  } catch (error) {
+    return authError(error, { name, email, photoUrl })
   }
 
-  const passwordHash = await hashPassword(password)
-  await createUser({ name, email, passwordHash, photoUrl: photoUrl || undefined })
-  redirect("/login")
+  // Sign the new account in right away. If the API requires a separate login
+  // and it fails, fall back to the login screen with a helpful flag.
+  try {
+    const user = await loginUser({ email, password })
+    await setSessionCookie(user.id)
+  } catch {
+    redirect(`/login?registered=1`)
+  }
+
+  redirect(next)
 }
 
 export async function logoutAction() {
+  try {
+    await logoutUser()
+  } catch {
+    // Clearing the local cookie below is still the right fallback.
+  }
   await clearSessionCookie()
   redirect("/")
 }

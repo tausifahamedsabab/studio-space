@@ -144,7 +144,7 @@ async function DashboardHome({
             Explore studios
           </Link>
           <Link
-            href="/dashboard/studios/new"
+            href="/add-studio"
             className={cn(buttonVariants({ size: "lg" }), "h-9 rounded-xl px-4")}
           >
             <Plus className="size-4" />
@@ -191,7 +191,7 @@ async function DashboardHome({
               </p>
             </div>
             <Link
-              href="/dashboard/bookings"
+              href="/my-bookings"
               className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-800"
             >
               View all
@@ -236,12 +236,19 @@ async function DashboardHome({
                     />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <Link
-                      href={`/studios/${booking.studioId}`}
-                      className="block truncate text-sm font-semibold hover:underline"
-                    >
-                      {booking.studioTitle}
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/studios/${booking.studioId}`}
+                        className="truncate text-sm font-semibold hover:underline"
+                      >
+                        {booking.studioTitle}
+                      </Link>
+                      {booking.status === "pending" && (
+                        <span className="shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 ring-1 ring-amber-200">
+                          Pending
+                        </span>
+                      )}
+                    </div>
                     <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                       <CalendarCheck className="size-3" />
                       {formatDateLong(booking.date)} ·{" "}
@@ -275,7 +282,7 @@ async function DashboardHome({
               </p>
             </div>
             <Link
-              href="/dashboard/studios"
+              href="/my-listings"
               className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-800"
             >
               Manage
@@ -297,7 +304,7 @@ async function DashboardHome({
                   100% of your hourly rate.
                 </p>
                 <Link
-                  href="/dashboard/studios/new"
+                  href="/add-studio"
                   className={cn(
                     buttonVariants({ size: "lg" }),
                     "mt-4 h-9 rounded-xl px-4"
@@ -340,11 +347,16 @@ async function DashboardHome({
                       />
                     </div>
                   </div>
-                  <div className="shrink-0 text-right">
+                  <div className="flex shrink-0 flex-col items-end gap-1">
                     <p className="text-sm font-semibold tabular-nums">
                       {formatCurrency(studio.pricePerHour)}
                     </p>
-                    <p className="text-[11px] text-muted-foreground">per hour</p>
+                    <Link
+                      href={`/studios/edit/${studio.id}`}
+                      className="text-[11px] font-semibold text-amber-700 hover:text-amber-800"
+                    >
+                      Edit
+                    </Link>
                   </div>
                 </li>
               ))}
@@ -369,7 +381,7 @@ async function DashboardHome({
           </div>
         </div>
         <Link
-          href="/dashboard/studios"
+          href="/my-listings"
           className={cn(
             buttonVariants({ variant: "outline", size: "lg" }),
             "h-9 shrink-0 rounded-xl border-amber-300 bg-white/70 text-amber-900 hover:bg-white"

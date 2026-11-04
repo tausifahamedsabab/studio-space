@@ -12,18 +12,18 @@ import { cn } from "cn"
 
 const LINKS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/studios", label: "My listings", icon: Store },
-  { href: "/dashboard/studios/new", label: "Add studio", icon: Plus },
-  { href: "/dashboard/bookings", label: "My bookings", icon: CalendarCheck },
+  { href: "/my-listings", label: "My listings", icon: Store },
+  { href: "/add-studio", label: "Add studio", icon: Plus },
+  { href: "/my-bookings", label: "My bookings", icon: CalendarCheck },
 ] as const
 
 function isActive(pathname: string, href: string) {
   if (href === "/dashboard") return pathname === "/dashboard"
-  if (href === "/dashboard/studios") {
+  if (href === "/my-listings") {
     return (
-      pathname === "/dashboard/studios" ||
-      (pathname.startsWith("/dashboard/studios/") &&
-        !pathname.startsWith("/dashboard/studios/new"))
+      pathname === "/my-listings" ||
+      pathname.startsWith("/studios/edit/") ||
+      pathname.startsWith("/dashboard/studios")
     )
   }
   return pathname === href || pathname.startsWith(`${href}/`)

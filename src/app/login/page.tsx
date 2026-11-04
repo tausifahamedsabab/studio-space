@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 
 import { AuthShell } from "@/components/auth/auth-shell"
 import { LoginForm } from "@/components/auth/login-form"
+import { googleAuthUrl } from "@/lib/api/auth"
+import { isMockMode } from "@/lib/api/config"
 
 export const metadata: Metadata = {
   title: "Log in",
@@ -28,7 +30,10 @@ async function LoginContent({
 
   return (
     <AuthShell>
-      <LoginForm next={next} />
+      <LoginForm
+        next={next}
+        googleUrl={isMockMode() ? undefined : googleAuthUrl(next ?? "/dashboard")}
+      />
     </AuthShell>
   )
 }

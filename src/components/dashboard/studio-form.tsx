@@ -1,16 +1,22 @@
 "use client"
 
-import { useActionState } from "react"
+import Link from "next/link"
+import { useActionState, useRef, useState } from "react"
 import {
   ImageIcon,
   Info,
   Lightbulb,
+  Loader2,
   Sparkles,
   TriangleAlert,
   Upload,
 } from "lucide-react"
 
-import { createStudioAction, type StudioFormState } from "@/actions/studios"
+import {
+  createStudioAction,
+  updateStudioAction,
+  type StudioFormState,
+} from "@/actions/studios"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -21,12 +27,15 @@ import {
   NativeSelectOption,
 } from "@/components/ui/native-select"
 import { Textarea } from "@/components/ui/textarea"
+import { toast } from "@/components/ui/toast"
 import {
   AMENITIES,
   CITIES,
   MAX_BOOKING_HOURS,
   STUDIO_CATEGORIES,
 } from "@/lib/constants"
+import { isImageUploadConfigured, uploadImageToImgbb } from "@/lib/imgbb"
+import type { Studio } from "@/lib/types"
 
 const TIPS = [
   "Lead with your best photo — it is the first thing creators see.",
@@ -35,18 +44,52 @@ const TIPS = [
   "Be specific about load-in, parking, and noise rules to avoid surprises.",
 ] as const
 
-export function StudioForm() {
+export function StudioForm({ studio }: { studio?: Studio }) {
+  const isEditing = Boolean(studio)
   const [state, formAction, pending] = useActionState<StudioFormState, FormData>(
-    createStudioAction,
+    studio ? updateStudioAction : createStudioAction,
     {}
   )
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
 
   const values = state.values ?? {}
-  const selectedAmenities = state.amenities ?? []
-  const instantBook = state.instantBook ?? true
+  const selectedAmenities = state.amenities ?? studio?.amenities ?? []
+  const instantBook = state.instantBook ?? studio?.instantBook ?? true
+  const canUpload = isImageUploadConfigured()
+
+  async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ""
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const url = await uploadImageToImgbb(file)
+      if (imageInputRef.current) imageInputRef.current.value = url
+      toast.add({
+        title: "Image uploaded",
+        description: "Your cover image is ready. Save the listing to publish it.",
+        type: "success",
+      })
+    } catch (error) {
+      toast.add({
+        title: "Upload failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "The image could not be uploaded.",
+        type: "error",
+      })
+    } finally {
+      setUploading(false)
+    }
+  }
 
   return (
     <form action={formAction} className="mt-8 flex flex-col gap-6">
+      {studio && <input type="hidden" name="studioId" value={studio.id} />}
+
       {state.error && (
         <Alert variant="destructive" className="border-destructive/30 bg-destructive/5">
           <TriangleAlert />
@@ -79,7 +122,7 @@ export function StudioForm() {
             <Input
               id="title"
               name="title"
-              defaultValue={values.title ?? ""}
+              defaultValue={values.title ?? studio?.title ?? ""}
               placeholder="Sunlit loft with a 12-foot cyc wall"
               aria-invalid={Boolean(state.fieldErrors?.title)}
               className="h-11 rounded-xl"
@@ -95,7 +138,7 @@ export function StudioForm() {
             <NativeSelect
               id="category"
               name="category"
-              defaultValue={values.category ?? ""}
+              defaultValue={values.category ?? studio?.category ?? ""}
               aria-invalid={Boolean(state.fieldErrors?.category)}
               className="w-full"
               required
@@ -118,7 +161,7 @@ export function StudioForm() {
             <NativeSelect
               id="minHours"
               name="minHours"
-              defaultValue={values.minHours ?? "2"}
+              defaultValue={values.minHours ?? String(studio?.minHours ?? 2)}
               aria-invalid={Boolean(state.fieldErrors?.minHours)}
               className="w-full"
             >
@@ -141,7 +184,7 @@ export function StudioForm() {
             <NativeSelect
               id="city"
               name="city"
-              defaultValue={values.city ?? ""}
+              defaultValue={values.city ?? studio?.city ?? ""}
               aria-invalid={Boolean(state.fieldErrors?.city)}
               className="w-full"
               required
@@ -163,11 +206,28 @@ export function StudioForm() {
             <Input
               id="area"
               name="area"
-              defaultValue={values.area ?? ""}
+              defaultValue={values.area ?? studio?.area ?? ""}
               placeholder="Arts District"
               aria-invalid={Boolean(state.fieldErrors?.area)}
               className="h-11 rounded-xl"
               required
+            />
+          </Field>
+
+          <Field
+            label="Street address"
+            htmlFor="address"
+            error={state.fieldErrors?.address}
+            hint="Optional. Shown on the listing and shared with confirmed guests."
+            className="sm:col-span-2"
+          >
+            <Input
+              id="address"
+              name="address"
+              defaultValue={values.address ?? studio?.address ?? ""}
+              placeholder="1200 E 6th St, Los Angeles, CA 90021"
+              aria-invalid={Boolean(state.fieldErrors?.address)}
+              className="h-11 rounded-xl"
             />
           </Field>
 
@@ -188,11 +248,41 @@ export function StudioForm() {
                 min={20}
                 max={2000}
                 step={5}
-                defaultValue={values.pricePerHour ?? ""}
+                defaultValue={
+                  values.pricePerHour ?? String(studio?.pricePerHour ?? "")
+                }
                 placeholder="120"
                 aria-invalid={Boolean(state.fieldErrors?.pricePerHour)}
                 className="h-11 rounded-xl pl-7"
                 required
+              />
+            </div>
+          </Field>
+
+          <Field
+            label="Security deposit"
+            htmlFor="securityDeposit"
+            error={state.fieldErrors?.securityDeposit}
+            hint="Refundable. Not included in the hourly total."
+          >
+            <div className="relative">
+              <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">
+                $
+              </span>
+              <Input
+                id="securityDeposit"
+                name="securityDeposit"
+                type="number"
+                min={0}
+                max={5000}
+                step={5}
+                defaultValue={
+                  values.securityDeposit ??
+                  String(studio?.securityDeposit ?? "")
+                }
+                placeholder="0"
+                aria-invalid={Boolean(state.fieldErrors?.securityDeposit)}
+                className="h-11 rounded-xl pl-7"
               />
             </div>
           </Field>
@@ -209,7 +299,7 @@ export function StudioForm() {
               type="number"
               min={1}
               max={500}
-              defaultValue={values.capacity ?? ""}
+              defaultValue={values.capacity ?? String(studio?.capacity ?? "")}
               placeholder="12"
               aria-invalid={Boolean(state.fieldErrors?.capacity)}
               className="h-11 rounded-xl"
@@ -229,7 +319,7 @@ export function StudioForm() {
               min={100}
               max={100000}
               step={50}
-              defaultValue={values.sizeSqft ?? ""}
+              defaultValue={values.sizeSqft ?? String(studio?.sizeSqft ?? "")}
               placeholder="1800"
               aria-invalid={Boolean(state.fieldErrors?.sizeSqft)}
               className="h-11 rounded-xl"
@@ -262,7 +352,7 @@ export function StudioForm() {
             <Textarea
               id="description"
               name="description"
-              defaultValue={values.description ?? ""}
+              defaultValue={values.description ?? studio?.description ?? ""}
               placeholder="A bright, column-free loft with exposed brick, a 12-foot cyc wall, and a full lighting grid. Ideal for editorial shoots, lookbooks, and small crews."
               aria-invalid={Boolean(state.fieldErrors?.description)}
               className="min-h-32 rounded-xl"
@@ -270,25 +360,65 @@ export function StudioForm() {
             />
           </Field>
 
-          <Field
-            label="Cover image URL"
-            htmlFor="imageUrl"
-            error={state.fieldErrors?.imageUrl}
-            hint="Leave blank to use a category image. Paste any https image URL."
-          >
-            <div className="relative">
-              <ImageIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="imageUrl"
-                name="imageUrl"
-                type="url"
-                defaultValue={values.imageUrl ?? ""}
-                placeholder="https://images.example.com/your-space.jpg"
-                aria-invalid={Boolean(state.fieldErrors?.imageUrl)}
-                className="h-11 rounded-xl pl-9"
+          <div>
+            <Label htmlFor="imageUrl" className="mb-1.5">
+              Cover image
+            </Label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="relative flex-1">
+                <ImageIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="imageUrl"
+                  name="imageUrl"
+                  type="url"
+                  ref={imageInputRef}
+                  defaultValue={
+                    values.imageUrl ?? studio?.images[0] ?? ""
+                  }
+                  placeholder="https://images.example.com/your-space.jpg"
+                  aria-invalid={Boolean(state.fieldErrors?.imageUrl)}
+                  className="h-11 rounded-xl pl-9"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!canUpload || uploading}
+                onClick={() => document.getElementById("cover-upload")?.click()}
+                className="h-11 shrink-0 rounded-xl"
+                title={
+                  canUpload
+                    ? "Upload an image to imgbb"
+                    : "Set NEXT_PUBLIC_IMGBB_API_KEY to enable uploads"
+                }
+              >
+                {uploading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Upload className="size-4" />
+                )}
+                {uploading ? "Uploading…" : "Upload"}
+              </Button>
+              <input
+                id="cover-upload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="sr-only"
+                onChange={handleUpload}
               />
             </div>
-          </Field>
+            {state.fieldErrors?.imageUrl ? (
+              <p className="mt-1.5 text-xs text-destructive">
+                {state.fieldErrors.imageUrl}
+              </p>
+            ) : (
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                {canUpload
+                  ? "Upload a JPG, PNG, WebP, or GIF up to 10 MB, or paste an image URL. Leave blank to use a category image."
+                  : "Paste any https image URL. Add NEXT_PUBLIC_IMGBB_API_KEY to enable direct uploads."}
+              </p>
+            )}
+          </div>
 
           <Field
             label="House rules"
@@ -299,7 +429,9 @@ export function StudioForm() {
             <Textarea
               id="rules"
               name="rules"
-              defaultValue={values.rules ?? ""}
+              defaultValue={
+                values.rules ?? studio?.rules.join("\n") ?? ""
+              }
               placeholder={"No smoking anywhere in the building.\nLoad-out must be finished by the end of your booking.\nPlease keep noise down in the shared hallway."}
               className="min-h-28 rounded-xl"
             />
@@ -377,6 +509,37 @@ export function StudioForm() {
         </div>
       </section>
 
+      {isEditing && studio && (
+        <section className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6">
+          <h2 className="text-sm font-semibold">Host details</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            These come from your StudioSpace account and cannot be edited here.
+          </p>
+          <dl className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div>
+              <dt className="text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                Host
+              </dt>
+              <dd className="mt-1 text-sm font-medium">{studio.hostName}</dd>
+            </div>
+            <div>
+              <dt className="text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                Contact
+              </dt>
+              <dd className="mt-1 truncate text-sm font-medium">
+                {studio.hostEmail ?? "Managed by your account"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                Host since
+              </dt>
+              <dd className="mt-1 text-sm font-medium">{studio.hostSince}</dd>
+            </div>
+          </dl>
+        </section>
+      )}
+
       <div className="flex flex-col gap-4 rounded-2xl border border-amber-200/70 bg-amber-50/60 p-5 sm:flex-row sm:items-start">
         <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-amber-400/20 text-amber-700">
           <Lightbulb className="size-4" />
@@ -400,13 +563,25 @@ export function StudioForm() {
       </div>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+        <Link
+          href="/my-listings"
+          className="inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Cancel
+        </Link>
         <Button
           type="submit"
           size="lg"
-          disabled={pending}
+          disabled={pending || uploading}
           className="h-11 rounded-xl px-6 text-sm font-semibold"
         >
-          {pending ? "Publishing…" : "Publish listing"}
+          {pending
+            ? isEditing
+              ? "Saving…"
+              : "Publishing…"
+            : isEditing
+              ? "Save changes"
+              : "Publish listing"}
         </Button>
       </div>
     </form>

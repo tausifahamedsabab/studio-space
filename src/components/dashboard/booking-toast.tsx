@@ -10,27 +10,31 @@ export function BookingToast() {
   const router = useRouter()
 
   useEffect(() => {
-    if (searchParams.get("booked")) {
+    const booked = searchParams.get("booked")
+    const cancelled = searchParams.get("cancelled") === "1"
+
+    if (booked) {
       toast.add({
-        title: "Session confirmed",
-        description: "Your booking is confirmed. Details are in your dashboard.",
+        title: "Booking requested",
+        description:
+          "Your session is pending host approval. You will see the status update here.",
         type: "success",
       })
-      const params = new URLSearchParams(searchParams.toString())
-      params.delete("booked")
-      const query = params.toString()
-      router.replace(query ? `/dashboard/bookings?${query}` : "/dashboard/bookings")
-    } else if (searchParams.get("cancelled") === "1") {
+    } else if (cancelled) {
       toast.add({
         title: "Booking cancelled",
         description: "The hours have been released back to the host.",
         type: "info",
       })
-      const params = new URLSearchParams(searchParams.toString())
-      params.delete("cancelled")
-      const query = params.toString()
-      router.replace(query ? `/dashboard/bookings?${query}` : "/dashboard/bookings")
+    } else {
+      return
     }
+
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("booked")
+    params.delete("cancelled")
+    const query = params.toString()
+    router.replace(query ? `/my-bookings?${query}` : "/my-bookings")
   }, [router, searchParams])
 
   return null

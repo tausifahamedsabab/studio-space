@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 
 import { AuthShell } from "@/components/auth/auth-shell"
 import { RegisterForm } from "@/components/auth/register-form"
+import { googleAuthUrl } from "@/lib/api/auth"
+import { isMockMode } from "@/lib/api/config"
 
 export const metadata: Metadata = {
   title: "Create an account",
@@ -29,7 +31,11 @@ async function RegisterContent({
 
   return (
     <AuthShell>
-      <RegisterForm next={next} intent={intent} />
+      <RegisterForm
+        next={next}
+        intent={intent}
+        googleUrl={isMockMode() ? undefined : googleAuthUrl(next ?? "/dashboard")}
+      />
     </AuthShell>
   )
 }

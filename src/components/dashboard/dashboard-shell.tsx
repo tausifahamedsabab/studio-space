@@ -51,7 +51,7 @@ export async function DashboardShell({
                 size="sm"
                 className="mt-3 w-full rounded-lg"
                 nativeButton={false}
-                render={<Link href="/dashboard/studios/new" />}
+                render={<Link href="/add-studio" />}
               >
                 <Plus className="size-3.5" />
                 Add a studio

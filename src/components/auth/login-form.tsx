@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useActionState, useState } from "react"
+import { useActionState, useEffect, useState } from "react"
 import { ArrowRight, Eye, EyeOff, Lock, Mail, TriangleAlert } from "lucide-react"
 
 import { loginAction, type AuthFormState } from "@/actions/auth"
@@ -34,7 +34,13 @@ function GoogleIcon() {
   )
 }
 
-export function LoginForm({ next }: { next?: string }) {
+export function LoginForm({
+  next,
+  googleUrl,
+}: {
+  next?: string
+  googleUrl?: string
+}) {
   const [state, formAction, pending] = useActionState<AuthFormState, FormData>(
     loginAction,
     {}
@@ -43,14 +49,22 @@ export function LoginForm({ next }: { next?: string }) {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
 
-  if (state.error) {
+  useEffect(() => {
+    if (!state.error) return
+
     toast.add({ title: "Login failed", description: state.error, type: "error" })
-  }
+  }, [state])
 
   const handleGoogleLogin = () => {
+    if (googleUrl) {
+      window.location.assign(googleUrl)
+      return
+    }
+
     toast.add({
       title: "Google sign-in",
-      description: "Google authentication is not configured yet.",
+      description:
+        "Google OAuth is handled by the API. Run in live mode to enable it.",
       type: "info",
     })
   }

@@ -62,15 +62,15 @@ export function UserMenu({ user }: { user: PublicUser }) {
           <LayoutDashboard />
           Dashboard
         </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/dashboard/studios/new" />} nativeButton={false}>
+        <DropdownMenuItem render={<Link href="/add-studio" />} nativeButton={false}>
           <Plus />
           Add New Studio
         </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/dashboard/studios" />} nativeButton={false}>
+        <DropdownMenuItem render={<Link href="/my-listings" />} nativeButton={false}>
           <Store />
           My Studio Listings
         </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/dashboard/bookings" />} nativeButton={false}>
+        <DropdownMenuItem render={<Link href="/my-bookings" />} nativeButton={false}>
           <CalendarCheck />
           My Bookings
         </DropdownMenuItem>
