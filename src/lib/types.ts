@@ -24,7 +24,9 @@ export type Studio = {
   description: string
   city: string
   area: string
+  address?: string
   pricePerHour: number
+  securityDeposit?: number
   rating: number
   reviewCount: number
   images: string[]
@@ -37,13 +39,14 @@ export type Studio = {
   published: boolean
   hostId: string
   hostName: string
+  hostEmail?: string
   hostAvatar: string
   hostSince: string
   createdAt: string
   rules: string[]
 }
 
-export type BookingStatus = "confirmed" | "completed" | "cancelled"
+export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled"
 
 export type Booking = {
   id: string
@@ -59,6 +62,7 @@ export type Booking = {
   hours: number
   pricePerHour: number
   total: number
+  securityDeposit?: number
   status: BookingStatus
   createdAt: string
 }

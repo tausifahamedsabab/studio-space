@@ -3,7 +3,7 @@ import type { Booking } from "./types"
 
 export function isUpcomingBooking(booking: Booking) {
   return (
-    booking.status === "confirmed" &&
+    (booking.status === "confirmed" || booking.status === "pending") &&
     booking.date >= dateToKey(startOfToday())
   )
 }
@@ -11,7 +11,8 @@ export function isUpcomingBooking(booking: Booking) {
 export function isPastBooking(booking: Booking) {
   return (
     booking.status === "completed" ||
-    (booking.status === "confirmed" && booking.date < dateToKey(startOfToday()))
+    ((booking.status === "confirmed" || booking.status === "pending") &&
+      booking.date < dateToKey(startOfToday()))
   )
 }
 
