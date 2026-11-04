@@ -16,18 +16,16 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   reactCompiler: true,
   images: {
+    // Users paste arbitrary listing image URLs (imgbb, Unsplash, or their own
+    // hosting), so allow every remote host and let the optimizer fetch.
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "images.unsplash.com",
+        hostname: "**",
       },
       {
-        protocol: "https",
-        hostname: "i.ibb.co",
-      },
-      {
-        protocol: "https",
-        hostname: "ibb.co",
+        protocol: "http",
+        hostname: "**",
       },
     ],
   },

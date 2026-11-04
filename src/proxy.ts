@@ -7,9 +7,9 @@ const SESSION_COOKIE = "studiospace_session"
  * cookie at all) is redirected before the segment renders, which keeps Cache
  * Components' instant-UI validation happy. Logged-in users pass straight
  * through, so refreshing a private route never bounces them to /login — the
- * server components then validate the JWT properly via requireUser().
+ * server components then validate the session properly via requireUser().
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (request.cookies.get(SESSION_COOKIE)) return NextResponse.next()
 
   const login = new URL("/login", request.url)
