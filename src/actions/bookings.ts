@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
+import { isApiError } from "@/lib/api/errors"
 import { requireUser } from "@/lib/auth"
 import {
   BOOKING_HORIZON_DAYS,
@@ -16,12 +17,10 @@ import {
   createBooking,
   getStudioById,
 } from "@/lib/data"
-import { readAll } from "@/lib/db"
 import {
   addDays,
   calculateTotals,
   dateToKey,
-  rangesOverlap,
   startOfToday,
   timeToHour,
 } from "@/lib/format"
@@ -82,54 +81,40 @@ export async function createBookingAction(
     return { error: "That start time has already passed. Pick a later slot." }
   }
 
-  const bookings = await readAll("bookings")
-  const hasConflict = bookings.some((booking) => {
-    if (
-      booking.studioId !== studio.id ||
-      booking.status !== "confirmed" ||
-      booking.date !== date
-    ) {
-      return false
-    }
-    const bookedStart = timeToHour(booking.startTime)
-    return rangesOverlap(
-      startHour,
-      startHour + hours,
-      bookedStart,
-      bookedStart + booking.hours
-    )
-  })
+  const { total } = calculateTotals(studio.pricePerHour, hours)
 
-  if (hasConflict) {
-    return {
-      error: "Someone just booked that window. Please choose another time.",
+  let bookingId: string
+  try {
+    const booking = await createBooking({
+      studio,
+      userId: user.id,
+      userName: user.name,
+      date,
+      startTime,
+      hours,
+      total,
+    })
+    bookingId = booking.id
+  } catch (error) {
+    if (isApiError(error)) {
+      return { error: error.message }
     }
+    throw error
   }
 
-  const { total } = calculateTotals(studio.pricePerHour, hours)
-  const booking = await createBooking({
-    studio,
-    userId: user.id,
-    userName: user.name,
-    date,
-    startTime,
-    hours,
-    total,
-  })
-
   revalidatePath("/dashboard")
-  revalidatePath("/dashboard/bookings")
+  revalidatePath("/my-bookings")
   revalidatePath(`/studios/${studio.id}`)
-  redirect(`/dashboard/bookings?booked=${booking.id}`)
+  redirect(`/my-bookings?booked=${bookingId}`)
 }
 
 export async function cancelBookingAction(formData: FormData) {
   const user = await requireUser()
   const bookingId = String(formData.get("bookingId") ?? "")
-  if (!bookingId) redirect("/dashboard/bookings")
+  if (!bookingId) redirect("/my-bookings")
 
   await cancelBooking(bookingId, user.id)
   revalidatePath("/dashboard")
-  revalidatePath("/dashboard/bookings")
-  redirect("/dashboard/bookings?cancelled=1")
+  revalidatePath("/my-bookings")
+  redirect("/my-bookings?cancelled=1")
 }

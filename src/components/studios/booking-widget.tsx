@@ -135,7 +135,7 @@ export function BookingWidget({
             size="lg"
             className="h-10 w-full rounded-xl"
             nativeButton={false}
-            render={<Link href="/dashboard/studios" />}
+            render={<Link href="/my-listings" />}
           >
             Manage listing
           </Button>
@@ -144,7 +144,7 @@ export function BookingWidget({
             size="lg"
             className="h-10 w-full rounded-xl"
             nativeButton={false}
-            render={<Link href="/dashboard/bookings" />}
+            render={<Link href="/my-bookings" />}
           >
             View bookings
           </Button>
@@ -336,23 +336,32 @@ export function BookingWidget({
                   {formatCurrency(totals.total)}
                 </dd>
               </div>
+              {studio.securityDeposit ? (
+                <div className="flex items-center justify-between gap-2 text-muted-foreground">
+                  <dt>Refundable security deposit</dt>
+                  <dd className="font-medium tabular-nums">
+                    {formatCurrency(studio.securityDeposit)}
+                  </dd>
+                </div>
+              ) : null}
             </dl>
           </div>
         )}
 
         {isAuthenticated ? (
-          <Button
-            type="submit"
-            size="lg"
-            disabled={pending || !selectedDate || !startTime}
-            className="h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-amber-500/20"
-          >
-            {pending
-              ? "Confirming…"
-              : studio.instantBook
-                ? "Confirm booking"
-                : "Request booking"}
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={pending || !selectedDate || !startTime}
+              className="h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-amber-500/20"
+            >
+              {pending ? "Sending request…" : "Request booking"}
+            </Button>
+            <p className="text-center text-[11px] text-muted-foreground">
+              Your host confirms the request before the session is final.
+            </p>
+          </div>
         ) : (
           <div className="flex flex-col gap-2">
             <Button
