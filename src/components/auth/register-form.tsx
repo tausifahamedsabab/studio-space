@@ -150,19 +150,26 @@ export function RegisterForm({
 
         <div className="flex flex-col gap-2">
           <Label htmlFor="photoUrl" className="text-white/80">
-            Photo URL
+            Photo URL{" "}
+            <span className="font-normal text-white/40">(optional)</span>
           </Label>
           <div className="relative">
             <ImageIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/40" />
             <Input
               id="photoUrl"
               name="photoUrl"
-              type="url"
-              placeholder="Paste a profile photo URL"
+              type="text"
+              inputMode="url"
+              placeholder="Paste a profile photo URL, or skip this"
               defaultValue={state.values?.photoUrl}
+              aria-invalid={Boolean(state.fieldErrors?.photoUrl)}
               className="h-11 rounded-xl border-white/10 bg-white/5 pl-9 text-white placeholder:text-white/40"
             />
           </div>
+          <FieldError message={state.fieldErrors?.photoUrl} />
+          <p className="text-xs text-white/40">
+            Optional — leave it blank and we&apos;ll use your initials as the avatar.
+          </p>
         </div>
 
         <div className="flex flex-col gap-2">

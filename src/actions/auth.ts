@@ -97,6 +97,18 @@ export async function registerAction(
     fieldErrors.confirmPassword = "Passwords do not match."
   }
 
+  // Photo URL is optional: only validate if the user provided one.
+  if (photoUrl) {
+    try {
+      const url = new URL(photoUrl)
+      if (url.protocol !== "https:" && url.protocol !== "http:") {
+        fieldErrors.photoUrl = "Use an http:// or https:// image URL."
+      }
+    } catch {
+      fieldErrors.photoUrl = "Enter a valid image URL, or leave it blank."
+    }
+  }
+
   if (Object.keys(fieldErrors).length > 0) {
     return { fieldErrors, values: { name, email, photoUrl } }
   }
