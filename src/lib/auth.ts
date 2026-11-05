@@ -2,17 +2,20 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { connection } from "next/server"
 
-import { getCurrentUser } from "./api/auth"
+import {
+  betterAuthSession,
+  clearBackendSession,
+} from "./auth-live"
 import { isMockMode } from "./api/config"
+import { mockResolveSession } from "./api/mock/store"
 import type { PublicUser } from "./types"
 
 const SESSION_COOKIE = "studiospace_session"
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7
 
 /**
- * In live mode the JWT cookie is owned by the Express API; login/register
- * already copied its Set-Cookie header onto the Next response. The mock mode
- * keeps a namespaced token in the same cookie so pages can share one read path.
+ * Mock mode keeps a namespaced token in the backend-session cookie so pages
+ * share one read path; BetterAuth owns the live-mode session cookie instead.
  */
 export async function setSessionCookie(userId: string) {
   if (!isMockMode()) return
@@ -29,7 +32,12 @@ export async function setSessionCookie(userId: string) {
 
 export async function clearSessionCookie() {
   const cookieStore = await cookies()
-  cookieStore.delete(SESSION_COOKIE)
+  cookieStore.set(SESSION_COOKIE, "", {
+    httpOnly: true,
+    path: "/",
+    maxAge: 0,
+  })
+  await clearBackendSession()
 }
 
 export async function getSessionUser(): Promise<PublicUser | null> {
@@ -37,12 +45,16 @@ export async function getSessionUser(): Promise<PublicUser | null> {
   // time rather than during prerendering.
   await connection()
   const store = await cookies()
-  const token = store.get(SESSION_COOKIE)?.value
 
-  // No incoming cookies means there is no backend session to validate.
-  if (!isMockMode() && store.getAll().length === 0) return null
+  const cookieValue = store.get(SESSION_COOKIE)?.value
+  if (cookieValue?.startsWith("mock:")) {
+    return mockResolveSession(cookieValue)
+  }
 
-  return getCurrentUser(token)
+  if (isMockMode()) return null
+
+  // Live mode: BetterAuth resolves the session from its own cookie.
+  return betterAuthSession()
 }
 
 export async function requireUser(): Promise<PublicUser> {

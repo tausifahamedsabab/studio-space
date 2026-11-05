@@ -1,15 +1,25 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useActionState, useEffect, useState } from "react"
-import { ArrowRight, Eye, EyeOff, Lock, Mail, TriangleAlert } from "lucide-react"
+import Link from "next/link";
+import { useActionState, useEffect, useState } from "react";
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  TriangleAlert,
+} from "lucide-react";
+import { createAuthClient } from "better-auth/react";
 
-import { loginAction, type AuthFormState } from "@/actions/auth"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { toast } from "@/components/ui/toast"
+import { loginAction, type AuthFormState } from "@/actions/auth";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/toast";
+
+const authClient = createAuthClient();
 
 function GoogleIcon() {
   return (
@@ -31,43 +41,49 @@ function GoogleIcon() {
         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
       />
     </svg>
-  )
+  );
 }
 
-export function LoginForm({
-  next,
-  googleUrl,
-}: {
-  next?: string
-  googleUrl?: string
-}) {
+export function LoginForm({ next }: { next?: string }) {
   const [state, formAction, pending] = useActionState<AuthFormState, FormData>(
     loginAction,
-    {}
-  )
-  const [email, setEmail] = useState(state.values?.email ?? "")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
+    {},
+  );
+
+  const [email, setEmail] = useState(state.values?.email ?? "");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [googlePending, setGooglePending] = useState(false);
 
   useEffect(() => {
-    if (!state.error) return
-
-    toast.add({ title: "Login failed", description: state.error, type: "error" })
-  }, [state])
-
-  const handleGoogleLogin = () => {
-    if (googleUrl) {
-      window.location.assign(googleUrl)
-      return
-    }
+    if (!state.error) return;
 
     toast.add({
-      title: "Google sign-in",
-      description:
-        "Google OAuth is handled by the API. Run in live mode to enable it.",
-      type: "info",
-    })
-  }
+      title: "Login failed",
+      description: state.error,
+      type: "error",
+    });
+  }, [state]);
+
+  const handleGoogleLogin = async () => {
+    try {
+      setGooglePending(true);
+
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: next || "/dashboard",
+      });
+    } catch (error) {
+      toast.add({
+        title: "Google login failed",
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+        type: "error",
+      });
+
+      setGooglePending(false);
+    }
+  };
 
   return (
     <div className="rounded-2xl border border-white/10 bg-[#111127]/80 p-6 shadow-[0_40px_120px_-60px_rgba(124,58,237,0.9)] backdrop-blur-xl sm:p-8">
@@ -75,11 +91,14 @@ export function LoginForm({
         <p className="text-xs font-semibold tracking-[0.28em] text-[#C084FC] uppercase">
           Login
         </p>
+
         <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
           Sign in to StudioSpace
         </h1>
+
         <p className="text-sm leading-relaxed text-white/60">
-          Access your bookings, manage listings, and keep your creative schedule on track.
+          Access your bookings, manage listings, and keep your creative schedule
+          on track.
         </p>
       </div>
 
@@ -87,7 +106,10 @@ export function LoginForm({
         {next && <input type="hidden" name="next" value={next} />}
 
         {state.error && (
-          <Alert variant="destructive" className="border-red-500/40 bg-red-500/10 text-red-200">
+          <Alert
+            variant="destructive"
+            className="border-red-500/40 bg-red-500/10 text-red-200"
+          >
             <TriangleAlert />
             <AlertDescription className="text-red-200">
               {state.error}
@@ -99,8 +121,10 @@ export function LoginForm({
           <Label htmlFor="email" className="text-white/80">
             Email
           </Label>
+
           <div className="relative">
             <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/40" />
+
             <Input
               id="email"
               name="email"
@@ -114,6 +138,7 @@ export function LoginForm({
               required
             />
           </div>
+
           {state.fieldErrors?.email && (
             <p className="text-xs text-red-300">{state.fieldErrors.email}</p>
           )}
@@ -124,12 +149,18 @@ export function LoginForm({
             <Label htmlFor="password" className="text-white/80">
               Password
             </Label>
-            <Link href="#" className="text-xs text-[#C084FC] hover:text-[#d8b4fe]">
+
+            <Link
+              href="#"
+              className="text-xs text-[#C084FC] hover:text-[#d8b4fe]"
+            >
               Forgot Password
             </Link>
           </div>
+
           <div className="relative">
             <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/40" />
+
             <Input
               id="password"
               name="password"
@@ -142,15 +173,21 @@ export function LoginForm({
               className="h-11 rounded-xl border-white/10 bg-white/5 pr-10 pl-9 text-white placeholder:text-white/40"
               required
             />
+
             <button
               type="button"
               onClick={() => setShowPassword((value) => !value)}
               aria-label={showPassword ? "Hide password" : "Show password"}
               className="absolute top-1/2 right-2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-white/50 transition-colors hover:bg-white/5 hover:text-white"
             >
-              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              {showPassword ? (
+                <EyeOff className="size-4" />
+              ) : (
+                <Eye className="size-4" />
+              )}
             </button>
           </div>
+
           {state.fieldErrors?.password && (
             <p className="text-xs text-red-300">{state.fieldErrors.password}</p>
           )}
@@ -176,10 +213,11 @@ export function LoginForm({
         type="button"
         variant="outline"
         onClick={handleGoogleLogin}
+        disabled={googlePending}
         className="mt-4 h-11 w-full rounded-xl border-white/10 bg-white/5 text-sm font-medium text-white hover:bg-white/10"
       >
         <GoogleIcon />
-        Continue with Google
+        {googlePending ? "Connecting to Google..." : "Continue with Google"}
       </Button>
 
       <p className="mt-6 text-center text-sm text-white/60">
@@ -192,5 +230,5 @@ export function LoginForm({
         </Link>
       </p>
     </div>
-  )
+  );
 }

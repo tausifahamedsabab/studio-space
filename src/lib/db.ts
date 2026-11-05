@@ -90,7 +90,7 @@ async function getMongoDb(): Promise<Db | null> {
       maxPoolSize: 10,
     })
     await client.connect()
-    const db = client.db(process.env.MONGODB_DB ?? "studiospace")
+    const db = client.db(process.env.MONGODB_DB ?? "studioSpace")
 
     if (!globalCache.__studioMongoSeeded) {
       const seed = seedStore()

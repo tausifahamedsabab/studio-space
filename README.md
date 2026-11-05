@@ -23,18 +23,18 @@ The app is designed to work in two modes:
 
 ## Routes
 
-| Route | Description |
-| --- | --- |
-| `/` | Marketing home page |
-| `/studios` | Searchable studio marketplace |
-| `/studios/[id]` | Studio detail and booking widget |
-| `/studios/edit/[id]` | Edit one of your listings |
-| `/login`, `/register` | Authentication |
-| `/dashboard` | Account overview |
-| `/add-studio` | Create a listing |
-| `/my-listings` | Manage your listings |
-| `/my-bookings` | Manage your bookings |
-| `/about`, `/how-it-works` | Informational pages |
+| Route                     | Description                      |
+| ------------------------- | -------------------------------- |
+| `/`                       | Marketing home page              |
+| `/studios`                | Searchable studio marketplace    |
+| `/studios/[id]`           | Studio detail and booking widget |
+| `/studios/edit/[id]`      | Edit one of your listings        |
+| `/login`, `/register`     | Authentication                   |
+| `/dashboard`              | Account overview                 |
+| `/add-studio`             | Create a listing                 |
+| `/my-listings`            | Manage your listings             |
+| `/my-bookings`            | Manage your bookings             |
+| `/about`, `/how-it-works` | Informational pages              |
 
 The legacy dashboard routes (`/dashboard/studios`, `/dashboard/studios/new`, `/dashboard/bookings`) redirect to the canonical routes above.
 
@@ -72,13 +72,13 @@ The other seeded hosts (`maya@studiospace.com`, `theo@studiospace.com`, `nina@st
 
 Copy `.env.example` to `.env.local` and adjust as needed.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `API_MODE` | `mock` | Set to `live` to use the Express API; anything else keeps mock mode. |
-| `API_BASE_URL` | `http://localhost:8000` | Server-side base URL for the Express API. |
-| `NEXT_PUBLIC_API_URL` | falls back to `API_BASE_URL` | Kept for local compatibility; `API_BASE_URL` takes precedence. |
-| `NEXT_PUBLIC_IMGBB_API_KEY` | empty | Enables direct browser uploads to imgbb. Without it, the form falls back to pasting image URLs. |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | empty | Enables the Google sign-in buttons (`/api/auth/google`). The authorized redirect URI is `<origin>/api/auth/google/callback`. |
+| Variable                                   | Default                                         | Purpose                                                                                                                      |
+| ------------------------------------------ | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `API_MODE`                                 | `mock`                                          | Set to `live` to use the Express API; anything else keeps mock mode.                                                         |
+| `API_BASE_URL`                             | `https://studio-space-server-smoky.vercel.app/` | Server-side base URL for the Express API.                                                                                    |
+| `NEXT_PUBLIC_API_URL`                      | falls back to `API_BASE_URL`                    | Kept for local compatibility; `API_BASE_URL` takes precedence.                                                               |
+| `NEXT_PUBLIC_IMGBB_API_KEY`                | empty                                           | Enables direct browser uploads to imgbb. Without it, the form falls back to pasting image URLs.                              |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | empty                                           | Enables the Google sign-in buttons (`/api/auth/google`). The authorized redirect URI is `<origin>/api/auth/google/callback`. |
 
 `API_MODE`, `API_BASE_URL`, and `NEXT_PUBLIC_IMGBB_API_KEY` in `next.config.ts` are read when the dev server starts, so restart after changing them.
 

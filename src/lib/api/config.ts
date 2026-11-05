@@ -10,7 +10,7 @@ function normalizeBaseUrl(value: string) {
 const rawApiUrl =
   process.env.API_BASE_URL ??
   process.env.NEXT_PUBLIC_API_URL ??
-  "http://localhost:8000";
+  "https://studio-space-server-smoky.vercel.app/";
 
 export const API_MODE: ApiMode =
   process.env.API_MODE === "live" ? "live" : "mock";

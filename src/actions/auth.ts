@@ -2,13 +2,21 @@
 
 import { redirect } from "next/navigation"
 
-import { loginUser, logoutUser, registerUser } from "@/lib/api/auth"
-import { isApiError } from "@/lib/api/errors"
 import {
   clearSessionCookie,
   safeNextPath,
   setSessionCookie,
 } from "@/lib/auth"
+import {
+  clearBackendSession,
+  establishBackendSession,
+  loginWithAuth,
+  logoutWithAuth,
+  registerWithAuth,
+} from "@/lib/auth-live"
+import { isMockMode } from "@/lib/api/config"
+import { loginUser, registerUser } from "@/lib/api/auth"
+import type { PublicUser } from "@/lib/types"
 
 export type AuthFormState = {
   error?: string
@@ -26,17 +34,23 @@ function isValidPassword(password: string) {
 }
 
 function authError(error: unknown, values: Record<string, string>): AuthFormState {
-  if (isApiError(error)) {
-    return {
-      error: error.message,
-      fieldErrors: error.fieldErrors,
-      values,
-    }
+  if (error instanceof Error) {
+    return { error: error.message, values }
   }
   return {
     error: "Something went wrong. Please try again.",
     values,
   }
+}
+
+async function finalizeAuth(user: PublicUser) {
+  if (isMockMode()) {
+    await setSessionCookie(user.id)
+    return
+  }
+  // BetterAuth already set its session cookie; mint the JWT the Express API
+  // validates on protected studio/booking mutations (Challenge 1).
+  await establishBackendSession(user)
 }
 
 export async function loginAction(
@@ -61,15 +75,15 @@ export async function loginAction(
     }
   }
 
-  let userId: string
   try {
-    const user = await loginUser({ email, password })
-    userId = user.id
+    const user = isMockMode()
+      ? await loginUser({ email, password })
+      : await loginWithAuth({ email, password })
+    await finalizeAuth(user)
   } catch (error) {
     return authError(error, { email })
   }
 
-  await setSessionCookie(userId)
   redirect(next || "/")
 }
 
@@ -114,18 +128,22 @@ export async function registerAction(
   }
 
   try {
-    await registerUser({ name, email, password, photoUrl: photoUrl || undefined })
+    const user = isMockMode()
+      ? await registerUser({
+          name,
+          email,
+          password,
+          photoUrl: photoUrl || undefined,
+        })
+      : await registerWithAuth({
+          name,
+          email,
+          password,
+          photoUrl: photoUrl || undefined,
+        })
+    await finalizeAuth(user)
   } catch (error) {
     return authError(error, { name, email, photoUrl })
-  }
-
-  // Sign the new account in right away. If the API requires a separate login
-  // and it fails, fall back to the login screen with a helpful flag.
-  try {
-    const user = await loginUser({ email, password })
-    await setSessionCookie(user.id)
-  } catch {
-    redirect(`/login?registered=1`)
   }
 
   redirect(next)
@@ -133,7 +151,7 @@ export async function registerAction(
 
 export async function logoutAction() {
   try {
-    await logoutUser()
+    await logoutWithAuth()
   } catch {
     // Clearing the local cookie below is still the right fallback.
   }

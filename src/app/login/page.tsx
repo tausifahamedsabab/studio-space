@@ -1,41 +1,36 @@
-import { Suspense } from "react"
-import type { Metadata } from "next"
+import { Suspense } from "react";
+import type { Metadata } from "next";
 
-import { AuthShell } from "@/components/auth/auth-shell"
-import { LoginForm } from "@/components/auth/login-form"
-import { googleAuthUrl } from "@/lib/api/auth"
-import { isMockMode } from "@/lib/api/config"
+import { AuthShell } from "@/components/auth/auth-shell";
+import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = {
   title: "Log in",
   description:
     "Log in to StudioSpace to manage your bookings, listings, and creative spaces.",
-}
+};
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <Suspense fallback={<AuthFormFallback />}>
       <LoginContent searchParams={searchParams} />
     </Suspense>
-  )
+  );
 }
 
 async function LoginContent({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await searchParams
-  const next = typeof params.next === "string" ? params.next : undefined
+  const params = await searchParams;
+  const next = typeof params.next === "string" ? params.next : undefined;
 
   return (
     <AuthShell>
-      <LoginForm
-        next={next}
-        googleUrl={isMockMode() ? undefined : googleAuthUrl(next ?? "/dashboard")}
-      />
+      <LoginForm next={next} />
     </AuthShell>
-  )
+  );
 }
 
 function AuthFormFallback() {
@@ -51,5 +46,5 @@ function AuthFormFallback() {
         <div className="h-11 w-full animate-pulse rounded-xl bg-muted" />
       </div>
     </AuthShell>
-  )
+  );
 }

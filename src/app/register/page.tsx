@@ -1,43 +1,38 @@
-import { Suspense } from "react"
-import type { Metadata } from "next"
+import { Suspense } from "react";
+import type { Metadata } from "next";
 
-import { AuthShell } from "@/components/auth/auth-shell"
-import { RegisterForm } from "@/components/auth/register-form"
-import { googleAuthUrl } from "@/lib/api/auth"
-import { isMockMode } from "@/lib/api/config"
+import { AuthShell } from "@/components/auth/auth-shell";
+import { RegisterForm } from "@/components/auth/register-form";
 
 export const metadata: Metadata = {
   title: "Create an account",
   description:
     "Create a StudioSpace account to book creative spaces or list your own studio by the hour.",
-}
+};
 
 export default function RegisterPage({ searchParams }: PageProps<"/register">) {
   return (
     <Suspense fallback={<AuthFormFallback />}>
       <RegisterContent searchParams={searchParams} />
     </Suspense>
-  )
+  );
 }
 
 async function RegisterContent({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await searchParams
-  const next = typeof params.next === "string" ? params.next : undefined
-  const intent = typeof params.intent === "string" ? params.intent : undefined
+  const params = await searchParams;
+
+  const next = typeof params.next === "string" ? params.next : undefined;
+  const intent = typeof params.intent === "string" ? params.intent : undefined;
 
   return (
     <AuthShell>
-      <RegisterForm
-        next={next}
-        intent={intent}
-        googleUrl={isMockMode() ? undefined : googleAuthUrl(next ?? "/dashboard")}
-      />
+      <RegisterForm next={next} intent={intent} />
     </AuthShell>
-  )
+  );
 }
 
 function AuthFormFallback() {
@@ -56,5 +51,5 @@ function AuthFormFallback() {
         <div className="h-11 w-full animate-pulse rounded-xl bg-muted" />
       </div>
     </AuthShell>
-  )
+  );
 }
