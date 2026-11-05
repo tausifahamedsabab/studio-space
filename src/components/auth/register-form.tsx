@@ -38,7 +38,7 @@ function GoogleIcon() {
       />
       <path
         fill="#34A853"
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84h3.66c.87 2.6 3.3 4.53 6.16 4.53z"
       />
       <path
         fill="#FBBC05"
@@ -80,14 +80,30 @@ export function RegisterForm({
   }, [state]);
 
   const handleGoogleSignup = async () => {
+    if (googlePending) return;
+
     try {
       setGooglePending(true);
 
-      await authClient.signIn.social({
+      const result = await authClient.signIn.social({
         provider: "google",
         callbackURL: next || "/dashboard",
       });
+
+      if (result.error) {
+        console.error("Google OAuth error:", result.error);
+
+        toast.add({
+          title: "Google sign-up failed",
+          description: result.error.message || "Unable to connect to Google.",
+          type: "error",
+        });
+
+        setGooglePending(false);
+      }
     } catch (error) {
+      console.error("Google OAuth exception:", error);
+
       toast.add({
         title: "Google sign-up failed",
         description:
@@ -206,7 +222,8 @@ export function RegisterForm({
           <FieldError message={state.fieldErrors?.photoUrl} />
 
           <p className="text-xs text-white/40">
-            Optional — leave it blank and we&apos;ll use your initials as the avatar.
+            Optional — leave it blank and we&apos;ll use your initials as the
+            avatar.
           </p>
         </div>
 
